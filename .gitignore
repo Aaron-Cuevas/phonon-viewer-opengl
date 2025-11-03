@@ -1,0 +1,4 @@
+phonon_viewer
+build/
+*.o
+.DS_Store
