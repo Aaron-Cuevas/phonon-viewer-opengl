@@ -1,59 +1,51 @@
 # Phonon Viewer (OpenGL)
 
-Visualizador mínimo en C + OpenGL/GLFW para explorar la ocupación promedio de fonones (\bar n) de un modo vibracional (modelo tipo Einstein) y su variación con la temperatura y la frecuencia. Proporciona una ventana interactiva con controles de teclado y visualización simple.
+Minimal C + OpenGL/GLFW viewer to explore the average phonon occupancy of a single vibrational mode (Einstein-like model) and how it changes with temperature and frequency. The app opens an interactive window with simple keyboard controls.
 
-> **Idea:** cada átomo vibra como un oscilador armónico cuántico con frecuencia (f). A una temperatura (T), la ocupación promedio por **modo** es
-> [\bar n=\frac{1}{\exp(\tfrac{hf}{k_B T})-1}.]
-
----
-
-## Física del modelo
-
-* **Distribución Bose–Einstein (oscilador armónico cuántico):**
-  [\bar n( f, T ) = \frac{1}{\exp!\big(\frac{h f}{k_B T}\big)-1},]
-  con (h) la constante de Planck y (k_B) la constante de Boltzmann.
-* **Nota importante:** si solo se pide la ocupación **por modo**, el número total de átomos (N) no interviene. Si se desea el **número total de fonones**, entonces se multiplica por el número de modos (p. ej., (3N) en un sólido monoatómico tipo Einstein).
+> **Core idea, explained without formulas:**
+> In the Einstein picture each atom behaves like a quantum harmonic oscillator with a fixed frequency, which we call *f*. At a given temperature *T*, the average number of phonons in one vibrational mode follows Bose–Einstein statistics. To compute it in words: take the ratio **r** equal to “Planck’s constant *h* times the mode frequency *f*” divided by “Boltzmann’s constant *k* times the temperature *T*.” Compute the exponential of **r**, subtract 1, then take the reciprocal. The result is the mean phonon count per mode.
 
 ---
 
-## Ejemplo trabajado (para el README)
+## Model, briefly (no math notation)
 
-**Enunciado.** Una muestra de un sólido monoatómico contiene (N=10) mol de átomos. Cada átomo vibra como un oscilador armónico cuántico con frecuencia (f=6\times 10^{12},\text{Hz}). A temperatura (T=483,\text{K}), hallar el número promedio de fonones **por modo** vibracional.
-
-**Solución.** Usamos (\bar n = 1/(e^{hf/k_BT}-1)):
-
-* (h=6.62607015\times 10^{-34},\text{J·s}), (k_B=1.380649\times10^{-23},\text{J/K})
-* Cociente adimensional (x = hf/(k_B T)):
-  [
-  x \approx \frac{6.626\times10^{-34}\cdot 6.0\times10^{12}}{1.38065\times10^{-23}\cdot 483} \approx 0.596.
-  ]
-* Entonces
-  [
-  \bar n = \frac{1}{e^{0.596}-1} \approx 1.23,\text{fonones por modo}.
-  ]
-
-**Respuesta:** (\boxed{\bar n\approx 1.23}) fonones por modo.
-*(Opcional)* Número total de fonones si hay (3N) modos: (1.23\times 3\times 10,\text{mol}\times N_A \approx 2.22\times 10^{25}.)
+* Each vibrational mode behaves like a quantized oscillator.
+* The mean phonon count per mode depends only on the dimensionless ratio described above. Larger frequency or lower temperature makes the ratio larger, which lowers the mean occupancy.
+* If you only need the **per‑mode** average, the total number of atoms does not appear. If you want the **total phonon count** in the sample, multiply the per‑mode average by the total number of modes (for a monatomic solid in the Einstein picture this is roughly three times the number of atoms).
 
 ---
 
-## Requisitos
+## Worked example (for this README)
+
+**Problem.** A monatomic solid contains 10 mol of atoms. Each atom vibrates like a quantum harmonic oscillator with frequency 6.0×10^12 Hz. At temperature 483 K, find the **average phonon count per vibrational mode**.
+
+**Solution (described).**
+
+1. Form the ratio **r** = (h·f)/(k·T). Using the CODATA values for *h* and *k*, with *f* = 6.0×10^12 Hz and *T* = 483 K, the ratio is about **0.596**.
+2. Exponentiate this ratio to get *e*^r ≈ 1.815, subtract 1 to get ≈ 0.815, then take the reciprocal. The result is about **1.23 phonons per mode**.
+
+**Answer:** approximately **1.23** phonons per mode.
+*(Optional)* If you want an order‑of‑magnitude of the **total** phonons in the solid, multiply by the number of modes (about three times Avogadro’s number times the number of moles) and by the per‑mode average computed above.
+
+---
+
+## Requirements
 
 * **macOS:** Xcode Command Line Tools, Homebrew, GLFW.
-* **Linux:** toolchain C (clang o gcc), GLFW y X11/Wayland dev packages.
-* **Windows:** MSYS2 o vcpkg con GLFW.
+* **Linux:** C toolchain (clang or gcc), GLFW and X11/Wayland development packages.
+* **Windows:** MSYS2 or vcpkg with GLFW.
 
 ---
 
-## Compilación rápida
+## Quick build
 
-### macOS (Apple Silicon o Intel)
+### macOS (Apple Silicon or Intel)
 
 ```bash
-# Dependencia
+# Dependency
 brew install glfw
 
-# Compilar (C11 + frameworks de macOS)
+# Build (C11 + macOS frameworks)
 SDK=$(xcrun --show-sdk-path)
 clang phonon_viewer.c -std=c11 -O2 \
   -isysroot "$SDK" -mmacosx-version-min=13.0 \
@@ -61,11 +53,11 @@ clang phonon_viewer.c -std=c11 -O2 \
   -lglfw -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo \
   -o phonon_viewer
 
-# Ejecutar
+# Run
 ./phonon_viewer
 ```
 
-### Linux (ejemplo Debian/Ubuntu)
+### Linux (Debian/Ubuntu example)
 
 ```bash
 sudo apt update && sudo apt install -y build-essential clang pkg-config libglfw3-dev libx11-dev libxi-dev libxcursor-dev libxrandr-dev
@@ -76,7 +68,7 @@ clang phonon_viewer.c -std=c11 -O2 -lglfw -lGL -ldl -lm -o phonon_viewer
 ### Windows (MSYS2)
 
 ```bash
-# En MSYS2 MinGW64
+# In MSYS2 MinGW64
 pacman -S --needed mingw-w64-x86_64-toolchain mingw-w64-x86_64-glfw
 clang -std=c11 -O2 phonon_viewer.c -lglfw3 -lopengl32 -lgdi32 -o phonon_viewer.exe
 ./phonon_viewer.exe
@@ -84,21 +76,21 @@ clang -std=c11 -O2 phonon_viewer.c -lglfw3 -lopengl32 -lgdi32 -o phonon_viewer.e
 
 ---
 
-## Controles (por defecto en este proyecto)
+## Controls (default in this project)
 
-* **←/→**: ajustar frecuencia visible
-* **↑/↓**: ajustar temperatura (T)
-* **W/S, D/A**: pasos más grandes
-* **+ / -**: escala de frecuencia
-* **Espacio**: pausar/continuar animación
-* **R**: reiniciar parámetros
-* **Esc**: salir
+* **Left/Right**: adjust visible frequency
+* **Up/Down**: adjust temperature
+* **W/S, D/A**: larger steps
+* **+ / -**: frequency scale
+* **Space**: pause/resume animation
+* **R**: reset parameters
+* **Esc**: quit
 
-> Los nombres y mapeos exactos pueden variarse en `phonon_viewer.c`. Si modificas los atajos, actualiza esta sección.
+> If you change the key mapping in `phonon_viewer.c`, please update this section.
 
 ---
 
-## Makefile opcional
+## Optional Makefile
 
 ```makefile
 SDK := $(shell xcrun --show-sdk-path)
@@ -118,9 +110,9 @@ clean:
 
 ---
 
-## Comprobación numérica rápida (opcional)
+## Quick numeric check (optional)
 
-Pequeño fragmento para verificar (\bar n) desde la terminal usando Python:
+A tiny Python snippet to reproduce the example above without any equations:
 
 ```bash
 python3 - << 'PY'
@@ -129,55 +121,56 @@ h=6.62607015e-34
 k=1.380649e-23
 f=6.0e12
 T=483.0
-x=h*f/(k*T)
-n=1.0/(math.exp(x)-1.0)
-print(f"x = {x:.3f}\n n̄ = {n:.3f} fonones por modo")
+r = h*f/(k*T)
+val = 1.0/(math.exp(r)-1.0)
+print(f"ratio r = {r:.3f}")
+print(f"mean phonons per mode = {val:.3f}")
 PY
 ```
 
 ---
 
-## Solución de problemas
+## Troubleshooting
 
-* **`cd: no such file or directory`**: verifica el nombre de carpeta real. GitHub en ZIP usa sufijo `-main`.
-* **`unknown sort specifier` en zsh**: copiaste comillas tipográficas. Reescribe comillas rectas `'` `"`.
-* **`library not found for -lglfw`**: exporta rutas de Homebrew y recompila:
+* **`cd: no such file or directory`**: check the real folder name. GitHub ZIPs often append `-main` to the repository name.
+* **`unknown sort specifier` in zsh**: you pasted curly quotes from a document. Re‑type straight quotes `'` or `"`.
+* **`library not found for -lglfw`**: export Homebrew paths and rebuild:
 
   ```bash
   export CPPFLAGS="-I$(brew --prefix)/include"
   export LDFLAGS="-L$(brew --prefix)/lib"
   ```
-* **Pantalla en negro**: confirma que el contexto OpenGL se crea y que tu GPU soporta el perfil usado. Revisa logs en consola.
+* **Black window**: confirm the OpenGL context is created and your GPU supports the requested profile; check the console logs.
 
 ---
 
-## Estructura del repositorio (sugerida)
+## Repository layout (suggested)
 
 ```
 .
-├── phonon_viewer.c       # App principal (GLFW + OpenGL)
+├── phonon_viewer.c       # Main app (GLFW + OpenGL)
 ├── include/              # Headers
-├── src/                  # Fuentes adicionales si crece el proyecto
-├── assets/               # Shaders/texturas si aplica
-├── Makefile              # Opcional
-└── README.md             # Este archivo
+├── src/                  # Additional sources if the project grows
+├── assets/               # Shaders/textures if applicable
+├── Makefile              # Optional
+└── README.md             # This file
 ```
 
 ---
 
-## Referencias
+## References
 
 * Shreiner, D. et al. *OpenGL Programming Guide*, 8th ed., Pearson.
-* Kittel, C. *Introduction to Solid State Physics* (modelo de Einstein y fonones).
+* Kittel, C. *Introduction to Solid State Physics* (Einstein model and phonons).
 
 ---
 
-## Aviso de uso de IA
+## AI assistance notice
 
-Este repositorio puede incluir secciones redactadas o revisadas con asistencia de IA, con fines de productividad y documentación. La autoría del código y las decisiones técnicas permanecen en los mantenedores del proyecto.
+Some sections of this repository may have been drafted or edited with AI assistance for productivity and documentation purposes. Code authorship and technical decisions remain with the project maintainers.
 
 ---
 
-## Licencia
+## License
 
-El código se distribuye bajo la licencia elegida por el autor del repositorio. Si no hay un archivo `LICENSE`, añade uno (MIT/BSD-3-Clause/Apache-2.0 son opciones comunes).
+Use the license you prefer for this project. If the repository lacks a `LICENSE` file, consider adding one (MIT, BSD‑3‑Clause, or Apache‑2.0 are common options).
